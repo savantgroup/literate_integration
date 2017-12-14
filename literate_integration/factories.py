@@ -25,17 +25,19 @@ def _to_snake_case(name):
 
 def _get_rest_test(klass):
     def inner(self):
+        instance = klass()
+        instance.setUp()
         response = klass.request_function(
             klass.url,
-            data=klass.data,
+            data=instance.data,
         )
         self.assertEqual(
             response.status_code,
-            klass.expected_status,
+            instance.expected_status,
             response.content
         )
         data = response.json()
-        for key, value in klass.expected_data.items():
+        for key, value in instance.expected_data.items():
             self.assertTrue(
                 key in data,
                 'The key "{}" was not present in the response.'.format(

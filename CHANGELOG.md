@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ./manage.py docgen <files>
 ```
 
+- `setUp()` function to perform a given action before a test is run.
+
+
 ## [0.0.0]
 
 ### Added

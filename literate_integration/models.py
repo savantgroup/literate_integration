@@ -62,3 +62,11 @@ class LiterateRESTTest(abc.ABC):
     def expected_status(self):
         """The status of the response we expect."""
         ...
+
+    def setUp(self):
+        """Run commands prior to running the test.
+
+        These are not added to documentation.
+
+        """
+        pass
