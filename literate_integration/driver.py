@@ -18,7 +18,7 @@ parser.add_argument(
 )
 
 
-def _get_documentations(module):
+def get_documentations(module):
     """Yield documentation for each literate test in the module."""
     klasses = inspect.getmembers(module, inspect.isclass)
     for name, klass in klasses:
@@ -26,6 +26,27 @@ def _get_documentations(module):
             continue
         if issubclass(klass, LiterateRESTTest):
             yield generate_rest_documentation(klass)
+
+
+def generate_documentation(files):
+    """Generate documentation.
+
+    Prints documentation to standard out.
+
+    Args:
+        files: A list of filenames.
+
+    """
+    new_files = [
+        x.replace('/', '.')[:-3]
+        for x in files if x.endswith('.py')
+    ]
+    documentation = []
+    for filename in new_files:
+        module = import_module(filename)
+        documentation.extend(get_documentations(module))
+
+    print('\n\n'.join(documentation))
 
 
 def main():
@@ -36,13 +57,4 @@ def main():
 
     """
     args = parser.parse_args()
-    files = [
-        x.replace('/', '.')[:-3]
-        for x in args.files if x.endswith('.py')
-    ]
-    documentation = []
-    for filename in files:
-        module = import_module(filename)
-        documentation.extend(_get_documentations(module))
-
-    print('\n\n'.join(documentation))
+    generate_documentation(args.files)

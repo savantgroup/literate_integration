@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   `docgen` does not work with Django.  The next iteration will add an
   equivalent Django management command.
 
+- *Django* management command for `docgen`.  You can use `docgen` from
+  Django by installing it, adding `"literate_integration"` to the
+  `INSTALLED_APPS` in the settings file, and by calling it with
+
+```
+./manage.py docgen <files>
+```
+
 ## [0.0.0]
 
 ### Added
