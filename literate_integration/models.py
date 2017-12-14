@@ -39,6 +39,15 @@ class LiterateRESTTest(abc.ABC):
         ...
 
     @abc.abstractproperty
+    def request_method(self):
+        """The method that the request_function performs.
+
+        It should be one of POST, GET, PATCH, PUT, or DELETE.
+
+        """
+        ...
+
+    @abc.abstractproperty
     def expected_data(self):
         """The data we expect back from the endpoint.
 

@@ -11,7 +11,7 @@ def read_full_documentation(fname):
 
 setup(
     name="literate_integration",
-    version="0.0.0",
+    version="0.0.1",
     author="Terrence Reilly",
     author_email="treilly@savantgroup.com",
     description=(
@@ -24,7 +24,9 @@ setup(
     packages=find_packages(exclude=('tests', 'docs')),
     long_description=read_full_documentation('README.md'),
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'docgen = literate_integration.driver:main',
+        ],
     },
     install_requires=[],
     setup_requires=[],

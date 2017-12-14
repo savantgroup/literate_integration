@@ -3,6 +3,24 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.0.1]
+
+### Added
+
+- `docgen`, a command-line script for generating documentation from
+  the given literal test files.  It outputs markdown documentation to
+  standard out.
+
+  For example, the following will compile the example documentation
+  for this library:
+
+```
+  docgen docs/example_rest_test.py > docs/api_documentation.md
+```
+
+  `docgen` does not work with Django.  The next iteration will add an
+  equivalent Django management command.
+
 ## [0.0.0]
 
 ### Added

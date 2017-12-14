@@ -15,6 +15,10 @@ class MockResponse(object):
         self.data = response_data
         self.status_code = response_status
 
+    @property
+    def content(self):
+        return str(self.data)
+
     def json(self):
         return self.data
 
@@ -39,6 +43,7 @@ class GoodExampleTest(LiterateRESTTest):
     url = 'http://localhost:7000/api/some-data/'
 
     request_function = get_mock_get({'errors': 'It didn\'t work.'}, 400)
+    request_method = 'GET'
 
     data = {
         'item1': 'value1',

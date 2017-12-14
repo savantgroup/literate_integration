@@ -1,10 +1,29 @@
 """An example of using literate integration tests."""
 
 import sys
-import requests
 
 from literate_integration.models import LiterateRESTTest
-from literate_integration.runner import rest_test_factory
+from literate_integration.factories import rest_test_factory
+
+
+class MockResponse(object):
+
+    def __init__(self, response_data, response_status):
+        self.data = response_data
+        self.status_code = response_status
+
+    @property
+    def content(self):
+        return str(self.data)
+
+    def json(self):
+        return self.data
+
+
+def get_mock_get(response_data, response_status):
+    def mock_get(url, data):
+        return MockResponse(response_data, response_status)
+    return mock_get
 
 
 class CreateSampleInLuna(LiterateRESTTest):
@@ -16,17 +35,22 @@ class CreateSampleInLuna(LiterateRESTTest):
 
     """
 
-    url = 'http://localhost:8000/api/samples/'
+    url = 'http://localhost:8000/api/samples/3'
 
-    request_function = requests.get
+    request_function = get_mock_get(
+        {
+            'id': 3,
+            'brand_name': 'Pennzoil',
+            'supplier': 'Acme Co.',
+        },
+        201,
+    )
+    request_method = 'GET'
 
-    data = {
-        'brand_name': 'Pennzoil',
-        'supplier': 'Acme Co.',
-    }
+    data = dict()
 
     expected_data = {
-        'id': int,
+        'id': 3,
         'brand_name': 'Pennzoil',
         'supplier': 'Acme Co.',
     }
