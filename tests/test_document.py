@@ -5,6 +5,8 @@ generation so much, since it's mostly just template
 boilerplate. (I.e. constants.)
 
 """
+import random
+import json
 from unittest import TestCase
 
 from literate_integration.document import (
@@ -12,6 +14,7 @@ from literate_integration.document import (
     remove_leading_whitespace,
     wrap_curl,
     MAX_LENGTH,
+    format_json,
 )
 
 
@@ -78,7 +81,7 @@ class CurlTests(TestCase):
             token,
         )
         wrapped_curl = '\n'.join([
-            'curl {}'.format(content_type),
+            'curl {} \\'.format(content_type),
             '     {}'.format(token),
         ])
         self.assertEqual(
@@ -90,23 +93,32 @@ class CurlTests(TestCase):
             )
         )
 
-    def test_with_data(self):
-        data = (
-            '\'{"temperature": 100.0, "density_value": 0.5, '
-            '"absolute_viscosity": 10.0, "kinematic_viscosity": 40.0, '
-            '"reference_type": 1}\''
-        )
-        curl = 'curl -X POST -d ' + data
-        self.assertTrue(len(curl) > MAX_LENGTH)
-        wrapped_curl = '\n'.join([
-            'curl -X POST',
-            '     -d ' + data,
-        ])
+    def test_format_json_short(self):
+        data = {'This is short enough': 'to not wrap'}
         self.assertEqual(
-            wrap_curl(curl),
-            wrapped_curl,
-            '\n\nExpected:\n{}\n\n But got:\n{}\n\n'.format(
-                wrapped_curl,
-                wrap_curl(curl)
-            )
+            format_json(data),
+            json.dumps(data),
         )
+
+    def test_format_long_data_doesnt_end_with_backslash(self):
+        data = {
+            'long_data': 'a' * MAX_LENGTH
+        }
+        formatted_data = format_json(data)
+        self.assertNotEqual(formatted_data[-1], '\\')
+
+    def test_format_long_data_doesnt_start_with_spaces(self):
+        data = {
+            'long_data': 'b' * MAX_LENGTH,
+        }
+        formatted_data = format_json(data)
+        self.assertFalse(formatted_data.startswith('  '))
+
+    def test_format_long_data_with_n_keys_has_n_plus_1_newlines(self):
+        n = random.randint(1, 10)
+        data = {
+            'key {}'.format(i): 'q' * MAX_LENGTH
+            for i in range(n)
+        }
+        formatted_data = format_json(data)
+        self.assertEqual(formatted_data.count('\n'), n + 1)

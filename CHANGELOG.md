@@ -33,6 +33,8 @@ class MyLiterateTest(LiterateRESTTest):
   is more than 70 characters long, then each of the flags will be placed
   on their own lines.
 
+- Add wrapping to the JSON data in curl examples.
+
 ## [0.0.1]
 
 ### Added

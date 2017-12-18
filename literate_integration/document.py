@@ -73,22 +73,37 @@ def _format_docstring(docstring):
     return ret
 
 
+def format_json(raw_data):
+    data = json.dumps(raw_data)
+    if len(data) < MAX_LENGTH:
+        return data
+
+    # Get the data with indents (it will have at least 3)
+    data = json.dumps(raw_data, indent=4)
+    data = data.split('\n')
+    # Put five spaces before each line but the first.
+    for i in range(1, len(data)):
+        data[i] = ' ' * 5 + data[i]
+    return '\n'.join(data)
+
+
 def _format_example(TestClass):
     test_class = TestClass()
     try:
-        data = json.dumps(test_class.data)
+        data = format_json(test_class.data)
     except Exception as ex:
         raise Exception(
             'data "{}" must be valid json: {}'.format(test_class.data, ex)
         )
-    request = 'curl -X {} -d \'{}\''.format(
+    request = 'curl -H {} -X {} -d \'{}\''.format(
+        '"Content-Type: application/json"',
         test_class.request_method,
         data,
     )
     wrapped_request = wrap_curl(request)
     wrapped = '\n' in wrapped_request
     if wrapped:
-        request = wrapped_request + '\n' + ' ' * 3 + test_class.url
+        request = wrapped_request + ' \\\n' + ' ' * 3 + test_class.url
     else:
         request = wrapped_request + ' ' + test_class.url
     return '### Example:\n\n```\n{}\n```'.format(request)
@@ -163,6 +178,11 @@ def wrap_curl(curl):
         else:
             ret.append(prev + flag + content)
         first_line = False
+
+    # Add backslashes
+    for i in range(len(ret) - 1):
+        ret[i] = ret[i] + ' \\'
+
     return '\n'.join(ret)
 
 
