@@ -3,6 +3,36 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.0.2]
+
+### Added
+
+- Add generation of required setup from `setUp` method.  Used if the
+  `LiterateRESTTest` subclass has a `setUp` method defined, and
+  that `setUp` method has a docstring.  In this case, the docstring's
+  third line and afterwards will be used and placed in a "Setup Required"
+  section.
+
+  For example, say we have a `LiterateRESTTest` like the following:
+
+```
+class MyLiterateTest(LiterateRESTTest):
+    ...
+
+    def setUp(self):
+      """This line is ignored.
+
+      This line is the first one which will be included in the
+      documentation.
+
+      """
+      ...
+```
+
+- Add wrapping to the curl examples.  If the line of the curl example
+  is more than 70 characters long, then each of the flags will be placed
+  on their own lines.
+
 ## [0.0.1]
 
 ### Added

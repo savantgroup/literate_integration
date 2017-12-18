@@ -28,7 +28,7 @@ def _get_rest_test(klass):
         instance = klass()
         instance.setUp()
         response = klass.request_function(
-            klass.url,
+            instance.url,
             data=instance.data,
         )
         self.assertEqual(

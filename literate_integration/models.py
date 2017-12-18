@@ -66,7 +66,10 @@ class LiterateRESTTest(abc.ABC):
     def setUp(self):
         """Run commands prior to running the test.
 
-        These are not added to documentation.
+        If a docstring is specified (and isn't this docstring),
+        then it will be added to an optional section in the
+        documentation describing prerequisites for calling a given
+        endpoint.
 
         """
         pass

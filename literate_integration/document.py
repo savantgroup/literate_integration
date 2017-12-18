@@ -3,9 +3,14 @@
 import re
 import json
 
+from .models import LiterateRESTTest
+
+
+MAX_LENGTH = 70
 
 CAPITALS = re.compile('[A-Z]')
 LEADING_SPACE = re.compile('^\s*')
+SECTION_DATA = re.compile(' -\w')
 
 
 def _to_title(name):
@@ -27,43 +32,141 @@ def _to_title(name):
     return '## {}'.format(new_name)
 
 
-def _get_leading_space(line):
+def get_leading_whitespace(line):
     spaces = LEADING_SPACE.findall(line)
     if len(spaces) > 0:
         return len(spaces[0])
     return 0
 
 
+def remove_leading_whitespace(lines):
+    """Remove leading whitespace, based on the first line."""
+    spaces = get_leading_whitespace(lines[0])
+    return [x[spaces:] for x in lines]
+
+
 def _format_docstring(docstring):
+    """Format the class docstring.
+
+    Expects the docstring to be a single line and (optionally) a blank
+    line followed by the rest of the body.  The rest of the body will
+    have its main indentation removed.
+
+    Args:
+        docstring: The docstring from the class.
+
+    Returns:
+        The docstring, with indentation removed and a title created
+        from the first line.
+
+    """
     lines = docstring.split('\n')
     if len(lines) == 0:
         return docstring
 
     subtitle = lines[0]
-    remaining = lines[1:]
+    remaining = lines[2:]
     if len(remaining) > 0:
-        indentation = _get_leading_space(remaining[0])
+        indentation = get_leading_whitespace(remaining[0])
         remaining = [x[indentation:] for x in remaining]
     ret = '### {}\n\n{}'.format(subtitle, '\n'.join(remaining))
     return ret
 
 
-def _format_example(test_class):
+def _format_example(TestClass):
+    test_class = TestClass()
     try:
         data = json.dumps(test_class.data)
     except Exception as ex:
         raise Exception(
-            'data "{}" must be valid json: {}'.format(data, ex)
+            'data "{}" must be valid json: {}'.format(test_class.data, ex)
         )
-    request = 'curl -X {} -d \'{}\' {}'.format(
+    request = 'curl -X {} -d \'{}\''.format(
         test_class.request_method,
         data,
-        test_class.url,
     )
+    wrapped_request = wrap_curl(request)
+    wrapped = '\n' in wrapped_request
+    if wrapped:
+        request = wrapped_request + '\n' + ' ' * 3 + test_class.url
+    else:
+        request = wrapped_request + ' ' + test_class.url
     return '### Example:\n\n```\n{}\n```'.format(request)
 
 
-def generate_rest_documentation(test_class):
+def _format_setup(TestClass):
+    """Describe necessary setup steps.
+
+    Only uses everything after the first line.
+    (That is, the docstring should have the first line, followed
+    by an empty line, followed by the body.)
+
+    Args:
+        TestClass: The LiterateRESTTest subclass.
+
+    Returns:
+        The body of the docstring with leading indentation removed,
+        and a title added.
+
+    """
+    docstring = TestClass.setUp.__doc__
+    same_as_default = docstring == LiterateRESTTest.setUp.__doc__
+    not_specified = docstring == '' or docstring is None
+    if same_as_default or not_specified:
+        return None
+
+    # Take everything after the first newline and empty line.
+    # That is,
+    remaining = docstring.split('\n')[2:]
+    if remaining == []:
+        return None
+    return '## Setup Required\n\n{}'.format(
+        '\n'.join(remove_leading_whitespace(remaining))
+    )
+
+
+def wrap_curl(curl):
+    """Wrap a curl example.
+
+    Assumes there is no url in the curl statement yet.
+
+    Args:
+        curl (str): The curl statement.
+
+    Returns:
+        The formatted curl statement.
+
+    """
+    if len(curl) < MAX_LENGTH:
+        return curl
+
+    flags = SECTION_DATA.findall(curl)  # len(flags) == n
+
+    contents = SECTION_DATA.split(curl)  # len(content) == n+1
+
+    # After this, len(contents) == len(flags)
+    ret = [contents.pop(0)]
+
+    # If we wrap once, we always want to wrap.
+    wrapped = False
+    first_line = True
+
+    for flag, content in zip(flags, contents):
+        prev = ret.pop(len(ret) - 1)
+        if wrapped or len(prev) + len(flag) + len(content) > MAX_LENGTH:
+            if not first_line:
+                ret.append(prev)
+                ret.append(' ' * 4 + flag + content)
+            else:
+                ret.append(prev + flag + content)
+            wrapped = True
+        else:
+            ret.append(prev + flag + content)
+        first_line = False
+    return '\n'.join(ret)
+
+
+def generate_rest_documentation(TestClass):
     """Generate documentation from a LiterateRESTTest.
 
     The docstring in the LiterateRESTTest will be passed as the
@@ -72,21 +175,21 @@ def generate_rest_documentation(test_class):
     be valid markdown and will be passed in as-is.
 
     Args:
-        test_class: A subclass of LiterateRESTTest.
+        TestClass: A subclass of LiterateRESTTest.
 
     Returns:
         A string representation of the LiterateRESTTest.
         The string will be valid markdown.
 
     """
-    title = _to_title(test_class.__name__)
-    body = _format_docstring(test_class.__doc__)
-    example = _format_example(test_class)
+    title = _to_title(TestClass.__name__)
+    body = _format_docstring(TestClass.__doc__)
+    example = _format_example(TestClass)
+    setup = _format_setup(TestClass)
+
+    documentation = [title, '', setup, body, example, '']
 
     return '\n'.join([
-        title,
-        '',
-        body,
-        example,
-        '',
+        section for section in documentation
+        if section is not None
     ])
