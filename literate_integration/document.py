@@ -6,14 +6,16 @@ import json
 from .models import LiterateRESTTest
 
 
-MAX_LENGTH = 70
+MAX_LENGTH = 60
 
 CAPITALS = re.compile('[A-Z]')
 LEADING_SPACE = re.compile('^\s*')
 SECTION_DATA = re.compile(' -\w')
+CODE_CLASS = '{ .example-code }'
+H2_CLASS = '{ .integration-test }'
 
 
-def _to_title(name):
+def _to_title(name, add_class=True):
     """Generate a title from a class name.
 
     Args:
@@ -29,7 +31,10 @@ def _to_title(name):
     new_name = ' '.join([
         ''.join([x, y]) for x, y in zip(uppers, lowers)
     ])
-    return '## {}'.format(new_name)
+    return '## {} {}'.format(
+        new_name,
+        H2_CLASS if add_class else '',
+    )
 
 
 def get_leading_whitespace(line):
@@ -69,7 +74,7 @@ def _format_docstring(docstring):
     if len(remaining) > 0:
         indentation = get_leading_whitespace(remaining[0])
         remaining = [x[indentation:] for x in remaining]
-    ret = '### {}\n\n{}'.format(subtitle, '\n'.join(remaining))
+    ret = '*{}*\n\n{}'.format(subtitle, '\n'.join(remaining))
     return ret
 
 
@@ -87,7 +92,7 @@ def format_json(raw_data):
     return '\n'.join(data)
 
 
-def _format_example(TestClass):
+def _format_example(TestClass, add_class=True):
     test_class = TestClass()
     try:
         data = format_json(test_class.data)
@@ -106,7 +111,10 @@ def _format_example(TestClass):
         request = wrapped_request + ' \\\n' + ' ' * 3 + test_class.url
     else:
         request = wrapped_request + ' ' + test_class.url
-    return '### Example:\n\n```\n{}\n```'.format(request)
+    return '### Example:\n\n```{}\n{}\n```'.format(
+        CODE_CLASS if add_class else '',
+        request,
+    )
 
 
 def _format_setup(TestClass):
@@ -135,7 +143,7 @@ def _format_setup(TestClass):
     remaining = docstring.split('\n')[2:]
     if remaining == []:
         return None
-    return '## Setup Required\n\n{}'.format(
+    return '### Setup Required\n\n{}'.format(
         '\n'.join(remove_leading_whitespace(remaining))
     )
 
@@ -207,7 +215,7 @@ def generate_rest_documentation(TestClass):
     example = _format_example(TestClass)
     setup = _format_setup(TestClass)
 
-    documentation = [title, '', setup, body, example, '']
+    documentation = [title, '', body, setup, example, '']
 
     return '\n'.join([
         section for section in documentation
