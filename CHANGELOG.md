@@ -3,6 +3,49 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.0.4]
+
+### Added
+
+- Add support for list response from an endpoint.  Previously, the
+  expected data had to match a detail response. (That is, both the
+  expected and actual data had to be dictionaries.) Now, both the
+  expected data and actual data can be lists of dictionaries.
+  The list response works by making sure there is at least one
+  object in the actual response which matches all fields in each of
+  the expected objects.  If this is not the case, then an exception
+  is thrown.
+
+  For example, if we have
+
+```
+  expected_data = [{'id': 1}, {'id': 3}]
+```
+
+  for `expected_data`, and we receive:
+
+```
+  [
+    {
+      "id": 1,
+      "name": "Jerry",
+    },
+    {
+      "id': 2,
+      "name": "Bob",
+    }
+  ]
+```
+
+  Then the test would pass.  However, if we had
+
+```
+  expected_data = [{'id': 1}, {'id': 2, 'name': 'Alice'}]
+```
+
+  Then the test would fail, because the response doesn't contain
+  any object which has both an `id` of 2 and a `name` of "Alice".
+
 ## [0.0.3]
 
 ### Added

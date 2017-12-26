@@ -23,6 +23,60 @@ def _to_snake_case(name):
     return 'test_' + new_name
 
 
+def _compare_detail_response(self, expected, actual):
+    """Compare an expected detail response.
+
+    Args:
+        expected (Dict[str, Any]): A JSON object.
+        actual (Dict[str, Any]): The actual response.
+
+    """
+    for key, value in expected.items():
+        self.assertTrue(
+            key in actual,
+            'The key "{}" was not present in the response.'.format(
+                key
+            )
+        )
+        self.assertEqual(
+            actual[key], value,
+            'The value for "{}" should have been {}, but was {}'.format(
+                key, value, actual[key]
+            )
+        )
+
+
+def _dict_matches(expected, actual):
+    for key, value in expected.items():
+        if key not in actual:
+            return False
+        if actual[key] != value:
+            return False
+    return True
+
+
+def _compare_list_response(self, expected, actual):
+    """Compare an expected list response.
+
+    Args:
+        expected (List[Dict[str, Any]]): For each JSON object
+            in the list, we expect that at least one of the objects
+            in the actual response matches completely.
+        actual (List[Dict[str, Any]]): The actual response from
+            the endpoint.
+
+    """
+    for expected_data in expected:
+        if not any([
+                _dict_matches(expected_data, actual_data)
+                for actual_data in actual
+        ]):
+            self.fail(
+                'No object in the actual response matched the '
+                'expected object: {}'.format(expected_data)
+            )
+
+
 def _get_rest_test(klass):
     def inner(self):
         instance = klass()
@@ -37,18 +91,13 @@ def _get_rest_test(klass):
             response.content
         )
         data = response.json()
-        for key, value in instance.expected_data.items():
-            self.assertTrue(
-                key in data,
-                'The key "{}" was not present in the response.'.format(
-                    key
-                )
-            )
-            self.assertEqual(
-                data[key], value,
-                'The value for "{}" should have been {}, but was {}'.format(
-                    key, value, data[key]
-                )
+        if isinstance(instance.expected_data, dict):
+            _compare_detail_response(self, instance.expected_data, data)
+        elif isinstance(instance.expected_data, list):
+            _compare_list_response(self, instance.expected_data, data)
+        else:
+            raise Exception(
+                'The expected data attribute must be a list or dictionary.'
             )
     return inner
 
