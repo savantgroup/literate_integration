@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.0.5]
+
+### Changed
+
+- URL will go on its own line, now, under two conditions: either the
+  body of the request is wrapped, or the request and URL together
+  are greater than the maximum length (currently 60.)
+
 ## [0.0.4]
 
 ### Added

@@ -107,7 +107,8 @@ def _format_example(TestClass, add_class=True):
     )
     wrapped_request = wrap_curl(request)
     wrapped = '\n' in wrapped_request
-    if wrapped:
+    long_url = (len(wrapped_request) + len(test_class.url) + 1) > MAX_LENGTH
+    if wrapped or long_url:
         request = wrapped_request + ' \\\n' + ' ' * 3 + test_class.url
     else:
         request = wrapped_request + ' ' + test_class.url
