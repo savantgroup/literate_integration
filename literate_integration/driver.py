@@ -19,7 +19,15 @@ parser.add_argument(
 
 
 def get_documentations(module):
-    """Yield documentation for each literate test in the module."""
+    """Yield documentation for each literate test in the module.
+
+    Args:
+        module: A module containing literate tests.
+
+    Yields:
+        The documentation for each literate test in the module.
+
+    """
     klasses = inspect.getmembers(module, inspect.isclass)
     for name, klass in klasses:
         if inspect.isabstract(klass):

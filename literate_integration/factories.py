@@ -27,6 +27,7 @@ def _compare_detail_response(self, expected, actual):
     """Compare an expected detail response.
 
     Args:
+        self (TestCase): The TestCase instance.
         expected (Dict[str, Any]): A JSON object.
         actual (Dict[str, Any]): The actual response.
 
@@ -59,6 +60,7 @@ def _compare_list_response(self, expected, actual):
     """Compare an expected list response.
 
     Args:
+        self (TestCase): The TestCase instance.
         expected (List[Dict[str, Any]]): For each JSON object
             in the list, we expect that at least one of the objects
             in the actual response matches completely.
@@ -107,7 +109,7 @@ def rest_test_factory(module, class_name, BaseClass=TestCase):
 
     Args:
         module: The module which holds the classes.
-        name: The name the integration test case should have.
+        class_name: The name the integration test case should have.
         BaseClass: The base class for this test.  Normally, this
             will probably be rest_framework's APITestCase, but
             it doesn't have to be.  However, it _must_ have the

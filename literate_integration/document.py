@@ -20,6 +20,8 @@ def _to_title(name, add_class=True):
 
     Args:
         name: The name of the class.
+        add_class: If true, adds a pandoc-style class statement
+            to the title.
 
     Returns:
         A markdown title from the class name.
@@ -45,7 +47,15 @@ def get_leading_whitespace(line):
 
 
 def remove_leading_whitespace(lines):
-    """Remove leading whitespace, based on the first line."""
+    """Remove leading whitespace, based on the first line.
+
+    Args:
+        lines: A list of strings which may be indented.
+
+    Returns:
+        A list of strings without indentation.
+
+    """
     spaces = get_leading_whitespace(lines[0])
     return [x[spaces:] for x in lines]
 
