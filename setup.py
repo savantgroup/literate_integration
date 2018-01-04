@@ -11,7 +11,7 @@ def read_full_documentation(fname):
 
 setup(
     name="literate_integration",
-    version="0.0.5",
+    version="0.1.0",
     author="Terrence Reilly",
     author_email="treilly@savantgroup.com",
     description=(

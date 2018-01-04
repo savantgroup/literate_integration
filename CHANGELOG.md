@@ -3,6 +3,65 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.1.0]
+
+### Added
+
+- `Matcher` class, and `assertMatches` helper function.  The `Matcher`
+  class takes an initial value, and attempts to match it with
+  whatever later values are passed.  These values must be valid
+  values for parsed JSON.  Terminals are compared by equality, and
+  collections are compared partially by matching children.  For example,
+  we could define a matcher as follows:
+
+```
+  matcher = Matcher({
+    'count': 2,
+    'results': [{
+      'name': 'Robert Mangero',
+    }]
+  })
+```
+
+  When we invoke `matcher.matches(val)` with some value, `val`, then
+  the matcher will make sure that `val` is a dictionary containing
+  (at least) the keys "count" and "results". It will then descend
+  into the values and make sure that they match.  It will check that,
+  for the key "count", the value matches 2.  For the key, "results",
+  it will check that the value is a list which contains (at least one)
+  object which satisfies a `Matcher` for `{ "name" : "Robert Mangero" }`.
+  In this sense, `Matcher` performs a recursive descent.
+
+  So, the following will evaluate to true:
+
+```
+  matcher.matches({
+    'count': 2,
+    'results': [{
+      'name': 'Robert Mangero',
+      'age': 28,
+    }],
+    'errors': [],
+  })
+```
+
+  Since it will ignore extra values.  However, the following will evaluate
+  to false:
+
+```
+  matcher.matches({
+    'count': 3,
+  })
+```
+
+  It will fail for two reasons: there is no key, "results", and the value
+  for the key, "count", does not match the given value.
+
+  The function, `assertMatches(expected, actual)` creates a `Matcher` instance
+  from the expected value, and matches it against the actual value. If they
+  don't match, then it will raise a `MatcherException`, whose attribute,
+  `message`, will hold the context of where the error occurred.
+
 ## [0.0.5]
 
 ### Changed
